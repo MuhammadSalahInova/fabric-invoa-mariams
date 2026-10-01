@@ -1,0 +1,160 @@
+/// Standard calendar reference table. Does not represent a business event — exists to enable consistent date-based grouping and trend analysis (by month, quarter, year, weekday) across all fact data. Always filter/relate via this table for calendar logic.
+table Date
+	lineageTag: 1ba18ada-16e7-4810-b57a-9079c4b83ad1
+	sourceLineageTag: [dbo].[gold_dim_date]
+	dataCategory: Time
+
+	/// Year-over-year percentage change in net revenue. Key growth KPI.
+	measure 'Net Revenue YoY %' =
+			
+			VAR NetRevenueLY = CALCULATE([Net Revenue], SAMEPERIODLASTYEAR('Date'[Full Date]))
+			 RETURN DIVIDE([Net Revenue] - NetRevenueLY, NetRevenueLY, 0)
+		displayFolder: Time Intelligence
+		lineageTag: fba41c72-5b2d-459a-bd28-6a829449be89
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Numeric date identifier in YYYYMMDD format. Used to relate to fact tables.
+	column 'Date ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 8d0cde9b-1100-47dc-bfaf-3ae0d132fc9d
+		sourceLineageTag: DateKey
+		summarizeBy: none
+		sourceColumn: DateKey
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Full Date'
+		dataType: dateTime
+		isKey
+		formatString: General Date
+		lineageTag: e437c6e6-6bf0-4e28-b6ae-65967a3c5079
+		sourceLineageTag: FullDate
+		summarizeBy: none
+		sourceColumn: FullDate
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 9b6888f8-9d19-46a3-8968-b45a162cea6a
+		sourceLineageTag: Year
+		summarizeBy: none
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: int64
+		formatString: 0
+		lineageTag: b9f3c200-12f1-4743-842d-e7c0a6dd9387
+		sourceLineageTag: Quarter
+		summarizeBy: none
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month
+		dataType: int64
+		formatString: 0
+		lineageTag: 2d21ede6-1f51-449c-8f29-9459125582c3
+		sourceLineageTag: Month
+		summarizeBy: none
+		sourceColumn: Month
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Name'
+		dataType: string
+		lineageTag: 4e22fe9d-324c-4f8d-9413-478d0b1d053f
+		sourceLineageTag: MonthName
+		summarizeBy: none
+		sourceColumn: MonthName
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Week Of Year'
+		dataType: int64
+		formatString: 0
+		lineageTag: c025823c-c343-4aa1-8451-54249e9745ef
+		sourceLineageTag: WeekOfYear
+		summarizeBy: none
+		sourceColumn: WeekOfYear
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day Of Month'
+		dataType: int64
+		formatString: 0
+		lineageTag: a7d9a61b-fa6a-491d-9b9d-a006087e999e
+		sourceLineageTag: DayOfMonth
+		summarizeBy: none
+		sourceColumn: DayOfMonth
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day Of Week'
+		dataType: int64
+		formatString: 0
+		lineageTag: 91ea54a0-f2bf-4e4b-a43c-01fac212fcb3
+		sourceLineageTag: DayOfWeek
+		summarizeBy: none
+		sourceColumn: DayOfWeek
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day Name'
+		dataType: string
+		lineageTag: ad81ee4e-91f8-405a-b0bc-62495f2ba8ac
+		sourceLineageTag: DayName
+		summarizeBy: none
+		sourceColumn: DayName
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Weekend'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 18da3212-90ee-4178-ac4b-a6f8ec9c9d40
+		sourceLineageTag: IsWeekend
+		summarizeBy: none
+		sourceColumn: IsWeekend
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Date = entity
+		mode: directLake
+		source
+			entityName: gold_dim_date
+			expressionSource: 'DirectLake - BronzeSalesLH'
+
+	changedProperty = Description
+
+	changedProperty = Name
+

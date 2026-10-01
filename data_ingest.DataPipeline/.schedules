@@ -1,0 +1,24 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/schedules/1.0.0/schema.json",
+  "schedules": [
+    {
+      "enabled": true,
+      "enabledControlType": "UserEnabled",
+      "jobType": "Execute",
+      "configuration": {
+        "type": "Cron",
+        "startDateTime": "2026-08-10T14:57:00",
+        "endDateTime": "2027-08-10T14:57:00",
+        "localTimeZoneId": "Egypt Standard Time",
+        "interval": 1440
+      },
+      "parameters": [
+        {
+          "name": "RunMode",
+          "value": "All",
+          "type": "Text"
+        }
+      ]
+    }
+  ]
+}

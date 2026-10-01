@@ -1,0 +1,375 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "LakehouseTableSource",
+            "sqlReaderQuery": {
+              "value": "SELECT table_name, source_url, primary_key, select_columns\nFROM control_table\nWHERE\n  ('@{pipeline().parameters.RunMode}' = 'All')\n  OR ('@{pipeline().parameters.RunMode}' = 'RetryFailed' AND status = 'Failed')\n  OR ('@{pipeline().parameters.SpecificTable}' != '' AND table_name = '@{pipeline().parameters.SpecificTable}')",
+              "type": "Expression"
+            },
+            "partitionOption": "None"
+          },
+          "datasetSettings": {
+            "type": "LakehouseTable",
+            "schema": [],
+            "connectionSettings": {
+              "name": "BronzeSalesLH",
+              "properties": {
+                "type": "Lakehouse",
+                "typeProperties": {
+                  "artifactId": "42447bdc-205a-905e-438d-7295f2d18090",
+                  "workspaceId": "00000000-0000-0000-0000-000000000000",
+                  "rootFolder": "Tables"
+                },
+                "externalReferences": {
+                  "connection": "fa61311a-3c25-480f-93a4-95c33b5c1073"
+                },
+                "annotations": []
+              }
+            },
+            "annotations": []
+          },
+          "firstRowOnly": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Lkp_GetTablesToProcess",
+        "dependsOn": []
+      },
+      {
+        "type": "ForEach",
+        "typeProperties": {
+          "isSequential": true,
+          "items": {
+            "value": "@activity('Lkp_GetTablesToProcess').output.value",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "4fbbd73d-d0fb-91a0-498f-e4aa91969d92",
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "parameters": {
+                  "p_table_name": {
+                    "value": {
+                      "value": "@{item().table_name}",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "p_status": {
+                    "value": "Success",
+                    "type": "string"
+                  },
+                  "p_error_message": {
+                    "value": "",
+                    "type": "string"
+                  },
+                  "p_primary_key": {
+                    "value": {
+                      "value": "@{item().primary_key}",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Nb_Success",
+              "dependsOn": [
+                {
+                  "activity": "Copy data Extract",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "4fbbd73d-d0fb-91a0-498f-e4aa91969d92",
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "parameters": {
+                  "p_table_name": {
+                    "value": {
+                      "value": "@{item().table_name}",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "p_status": {
+                    "value": "Failed",
+                    "type": "string"
+                  },
+                  "p_error_message": {
+                    "value": {
+                      "value": "@{activity('Copy data Extract').error.message}",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Nb_StatusFailed",
+              "dependsOn": [
+                {
+                  "activity": "Copy data Extract",
+                  "dependencyConditions": [
+                    "Failed"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Office365Email",
+              "typeProperties": {
+                "body": "<p>@concat( &nbsp;&nbsp;&nbsp;'Table failed: ', &nbsp;&nbsp;&nbsp;item().table_name, &nbsp;&nbsp;&nbsp;decodeUriComponent('%0A'), &nbsp;&nbsp;&nbsp;'Error message: ', &nbsp;&nbsp;&nbsp;activity('Copy data Extract').error.message, &nbsp;&nbsp;&nbsp;decodeUriComponent('%0A'), &nbsp;&nbsp;&nbsp;'Failure time: ', &nbsp;&nbsp;&nbsp;utcnow())</p>",
+                "to": "msalah-next@inovasys.com",
+                "subject": {
+                  "value": "@concat('TAble failed ', item().table_name, ' - Northwind Bronze Pipeline')",
+                  "type": "Expression"
+                }
+              },
+              "externalReferences": {
+                "connection": "74e1ace8-5ad5-463d-a280-aa1970da9532"
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Email_OnFailure",
+              "dependsOn": [
+                {
+                  "activity": "Copy data Extract",
+                  "dependencyConditions": [
+                    "Failed"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Copy",
+              "typeProperties": {
+                "source": {
+                  "type": "RestSource",
+                  "requestMethod": "GET",
+                  "paginationRules": {
+                    "supportRFC5988": "true",
+                    "AbsoluteUrl": {
+                      "value": "$['@odata.nextLink']",
+                      "type": "Expression"
+                    }
+                  },
+                  "httpRequestTimeout": "00:01:40",
+                  "requestInterval": "00.00:00:00.010",
+                  "datasetSettings": {
+                    "type": "RestResource",
+                    "typeProperties": {
+                      "relativeUrl": {
+                        "value": "@concat(item().table_name, '?$format=json&$select=', item().select_columns)",
+                        "type": "Expression"
+                      }
+                    },
+                    "schema": [],
+                    "externalReferences": {
+                      "connection": "72734a5a-eaa3-4c5b-816e-872324508fad"
+                    },
+                    "annotations": []
+                  }
+                },
+                "sink": {
+                  "type": "LakehouseTableSink",
+                  "tableActionOption": "Append",
+                  "applyVOrder": false,
+                  "enableTimestampNtz": false,
+                  "datasetSettings": {
+                    "type": "LakehouseTable",
+                    "typeProperties": {
+                      "table": {
+                        "value": "@concat('stg_', item().table_name)",
+                        "type": "Expression"
+                      }
+                    },
+                    "schema": [],
+                    "connectionSettings": {
+                      "name": "BronzeSalesLH",
+                      "properties": {
+                        "type": "Lakehouse",
+                        "typeProperties": {
+                          "artifactId": "42447bdc-205a-905e-438d-7295f2d18090",
+                          "workspaceId": "00000000-0000-0000-0000-000000000000",
+                          "rootFolder": "Tables"
+                        },
+                        "externalReferences": {
+                          "connection": "fa61311a-3c25-480f-93a4-95c33b5c1073"
+                        },
+                        "annotations": []
+                      }
+                    },
+                    "annotations": []
+                  }
+                },
+                "translator": {
+                  "type": "TabularTranslator",
+                  "typeConversion": true,
+                  "typeConversionSettings": {
+                    "allowDataTruncation": true,
+                    "treatBooleanAsNumber": false
+                  },
+                  "columnFlattenSettings": {
+                    "treatArrayAsString": false,
+                    "treatStructAsString": false,
+                    "flattenColumnDelimiter": "."
+                  }
+                },
+                "enableStaging": false
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Copy data Extract",
+              "dependsOn": []
+            },
+            {
+              "type": "MicrosoftTeams",
+              "typeProperties": {
+                "content": "@concat(    'Table failed: ',    item().table_name,    decodeUriComponent('%0A'),    'Error message: ',    activity('Copy data Extract').error.message,    decodeUriComponent('%0A'),    'Failure time: ',    utcnow())",
+                "teamId": "43f164df-f56d-409d-9cbe-25edbfb9209c",
+                "channelId": "19:adcadb65a29f4106b8b5983b4e660f10@thread.tacv2",
+                "operationType": "SendMessageInChannel",
+                "subject": {
+                  "value": "@concat('TAble failed ', item().table_name, ' - Northwind Bronze Pipeline')",
+                  "type": "Expression"
+                }
+              },
+              "externalReferences": {
+                "connection": "10af65d6-1573-4163-aa46-775733455852"
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "on failed",
+              "dependsOn": [
+                {
+                  "activity": "Copy data Extract",
+                  "dependencyConditions": [
+                    "Failed"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "name": "ForEachBronzeTables",
+        "dependsOn": [
+          {
+            "activity": "Lkp_GetTablesToProcess",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "69c57b9c-6236-bcbe-4721-052de20710f8",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "FromExcel",
+        "dependsOn": [
+          {
+            "activity": "Lkp_GetTablesToProcess",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "MicrosoftTeams",
+        "typeProperties": {
+          "content": "<p>Ingestion Succeed</p>",
+          "teamId": "43f164df-f56d-409d-9cbe-25edbfb9209c",
+          "channelId": "19:4a45df15baee426ba185cb7b3e4adf0b@thread.tacv2",
+          "operationType": "SendMessageInChannel",
+          "subject": "Pipline succeed"
+        },
+        "externalReferences": {
+          "connection": "10af65d6-1573-4163-aa46-775733455852"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "on success",
+        "dependsOn": [
+          {
+            "activity": "FromExcel",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "ForEachBronzeTables",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ],
+    "parameters": {
+      "RunMode": {
+        "type": "string"
+      },
+      "SpecificTable": {
+        "type": "string"
+      }
+    }
+  }
+}

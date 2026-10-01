@@ -1,0 +1,452 @@
+/// Fact, order-line grain
+table 'Order Sales'
+	lineageTag: 790c446d-b823-4698-bab1-4ec44d1db2c2
+	sourceLineageTag: [dbo].[gold_fact_order_sales]
+
+	/// Total sale value before any discounts are applied. Represents list-price revenue.
+	measure 'Gross Revenue' =
+			
+			SUMX('Order Sales', 'Order Sales'[Quantity] * 'Order Sales'[Unit Price at Sale])
+		displayFolder: Revenue
+		lineageTag: 3ab81c59-f4eb-4aac-9764-8a623f6f9cf9
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Actual revenue earned after discounts. Primary measure for all revenue reporting.
+	measure 'Net Revenue' =
+			
+			SUMX(
+			    'Order Sales',
+			    'Order Sales'[Quantity] * 'Order Sales'[Unit Price at Sale] * (1 - 'Order Sales'[Discount])
+			)
+		displayFolder: Revenue
+		lineageTag: 0a380be2-8898-4a57-831e-017ef5ae27a8
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Percentage of gross revenue lost to discounts. High values may signal over-discounting.
+	measure 'Discount % of Revenue' = ```
+			
+			VAR TotalDiscountAmount = 
+			SUMX(
+			    'Order Sales',
+			    'Order Sales'[Quantity] * 'Order Sales'[Unit Price at Sale] * 'Order Sales'[Discount]
+			)
+			RETURN DIVIDE(TotalDiscountAmount, [Gross Revenue], 0)
+			```
+		displayFolder: Revenue
+		lineageTag: 75541534-be67-4bd9-9219-a6c6a42e636f
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Count of distinct customer orders.
+	measure 'Total Orders' = DISTINCTCOUNT('Order Sales'[Order Number])
+		formatString: 0
+		displayFolder: Orders
+		lineageTag: 1c630a9b-e445-4634-a3d5-7edc9e031a99
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Description
+
+	/// Total number of product units sold.
+	measure 'Total Quantity Sold' = SUM('Order Sales'[Quantity])
+		formatString: 0
+		displayFolder: Orders
+		lineageTag: 0d7148ae-bff8-4d72-ab0b-ae64d0eed27a
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+	/// Average revenue generated per order. Key indicator of customer purchasing power.
+	measure 'Avg Order Value' = DIVIDE([Net Revenue], [Total Orders], 0)
+		displayFolder: Orders
+		lineageTag: ba5fa75d-759b-4017-8291-70ed4462eda4
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Average number of distinct product lines per order.
+	measure 'Avg Items per Order' = ```
+			
+			VAR TotalOrderLines =
+			    COUNTROWS('Order Sales')
+			
+			RETURN
+			    DIVIDE(TotalOrderLines, [Total Orders], 0)
+			 
+			 
+			```
+		displayFolder: Orders
+		lineageTag: 1515213d-6b6f-484e-ac81-ab1df6af174a
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Percentage of orders delivered on time. Key carrier and logistics performance KPI.
+	measure 'On-Time Delivery %' =
+			
+			VAR ValidLines =
+			    FILTER(
+			        'Order Sales',
+			        NOT ISBLANK('Order Sales'[Actual Ship Date])
+			            && NOT ISBLANK('Order Sales'[Required Delivery Date])
+			    )
+			VAR TotalLines =
+			    COUNTROWS(ValidLines)
+			VAR OnTimeLines =
+			    COUNTROWS(
+			        FILTER(
+			            ValidLines,
+			            'Order Sales'[Actual Ship Date]
+			                <= 'Order Sales'[Required Delivery Date]
+			        )
+			    )
+			RETURN
+			    DIVIDE(OnTimeLines, TotalLines, 0)
+		displayFolder: Shipping & Delivery
+		lineageTag: 8452c562-d96a-4b43-b6fc-bd953822768f
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Revenue tied to orders that were shipped late — highlights financial impact of delivery delays.
+	measure 'Revenue by Shipper (Late Orders)' =
+			
+			CALCULATE(
+			    [Net Revenue],
+			    FILTER(
+			        'Order Sales',
+			        NOT ISBLANK('Order Sales'[Actual Ship Date])
+			            && NOT ISBLANK('Order Sales'[Required Delivery Date])
+			            && 'Order Sales'[Actual Ship Date]
+			                > 'Order Sales'[Required Delivery Date]
+			    )
+			)
+		displayFolder: Shipping & Delivery
+		lineageTag: 3319c9dd-592b-409f-8f13-d9bfb8497082
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Order count analyzed by when delivery was expected, rather than when it was placed.
+	measure 'Orders by Required Date' =
+			
+			CALCULATE(
+			    [Total Orders],
+			    USERELATIONSHIP('Order Sales'[Required Delivery Date], 'Date'[Date ID])
+			)
+		formatString: 0
+		displayFolder: Shipping & Delivery
+		lineageTag: 407fed66-0d96-43be-be30-c13a206f610d
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+	/// Order count analyzed by when items actually left the warehouse.
+	measure 'Orders by Shipped Date' =
+			
+			CALCULATE(
+			    [Total Orders],
+			    USERELATIONSHIP('Order Sales'[Actual Ship Date], 'Date'[Date ID])
+			)
+		formatString: 0
+		displayFolder: Shipping & Delivery
+		lineageTag: 59f66aea-8db4-47eb-baea-bc6d0061c6df
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+	/// The order this line item belongs to. Multiple rows can share the same order number.
+	column 'Order Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: ebb7b489-9239-4d68-88a0-da6a827be775
+		sourceLineageTag: OrderKey
+		summarizeBy: count
+		sourceColumn: OrderKey
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Links this sale to the customer who placed the order (as of order date).
+	column 'Customer Reference'
+		dataType: int64
+		formatString: 0
+		lineageTag: 5ac41fde-b470-491d-b45e-4d67a94d5782
+		sourceLineageTag: CustomerKey
+		summarizeBy: none
+		sourceColumn: CustomerKey
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Links this sale to the sales employee who processed it.
+	column 'Employee Reference'
+		dataType: int64
+		formatString: 0
+		lineageTag: f8af8659-88df-43b4-904a-fb7c9edc5406
+		sourceLineageTag: EmployeeKey
+		summarizeBy: none
+		sourceColumn: EmployeeKey
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Links this sale to the specific product sold (as of order date).
+	column 'Product Reference'
+		dataType: int64
+		formatString: 0
+		lineageTag: 97c99da9-547e-43f6-a967-473cc78eff7f
+		sourceLineageTag: ProductKey
+		summarizeBy: none
+		sourceColumn: ProductKey
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Links this sale to the supplier of the product sold.
+	column 'Supplier Reference'
+		dataType: int64
+		formatString: 0
+		lineageTag: ee1f4765-d636-4ca2-b82b-d5e2eb6aa1b8
+		sourceLineageTag: SupplierKey
+		summarizeBy: none
+		sourceColumn: SupplierKey
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Links this sale to the carrier used for delivery (as of order date).
+	column 'Shipper Reference'
+		dataType: int64
+		formatString: 0
+		lineageTag: d4a2cd73-e78f-4730-a291-76a41dac94ed
+		sourceLineageTag: ShipperKey
+		summarizeBy: none
+		sourceColumn: ShipperKey
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The date the customer placed the order. Primary date used for most reporting.
+	column 'Order Date'
+		dataType: int64
+		formatString: 0
+		lineageTag: 1ae6f85c-bdf5-41b9-83f4-023f567addfa
+		sourceLineageTag: OrderDateKey
+		summarizeBy: none
+		sourceColumn: OrderDateKey
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Number of units of this product sold on this order line.
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 9e778672-d9cd-4d32-873f-51dd8af82d0d
+		sourceLineageTag: Quantity
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Price per unit at the time of sale, before discount.
+	column 'Unit Price at Sale'
+		dataType: double
+		lineageTag: 002b959c-e17c-4897-bc78-df8a42440c59
+		sourceLineageTag: UnitPrice
+		summarizeBy: sum
+		sourceColumn: UnitPrice
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Discount applied to this order line, stored as a fraction between 0 and 1 (0.15 = 15%).
+	column Discount
+		dataType: double
+		lineageTag: b7412baa-5c9e-4abf-a336-c93b21113432
+		sourceLineageTag: Discount
+		summarizeBy: sum
+		sourceColumn: Discount
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Freight/shipping cost charged for the overall order.
+	column 'Shipping Cost'
+		dataType: double
+		lineageTag: 76367fa8-f908-417e-80cc-8ece75a24cbe
+		sourceLineageTag: Freight
+		summarizeBy: sum
+		sourceColumn: Freight
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Internal unique identifier for this order-line record. Not business-meaningful.
+	column 'Sales Record ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 3a05e774-9d97-4523-9a9e-31bfb76b71f4
+		sourceLineageTag: FactSalesKey
+		summarizeBy: count
+		sourceColumn: FactSalesKey
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The date the customer requested/expected delivery by.
+	column 'Required Delivery Date'
+		dataType: int64
+		formatString: 0
+		lineageTag: 9438ce24-a67c-45ec-a946-dbe24f3c2fdd
+		sourceLineageTag: RequiredDateKey
+		summarizeBy: count
+		sourceColumn: RequiredDateKey
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The date the order actually left the warehouse. Compare to Required Delivery Date to assess lateness.
+	column 'Actual Ship Date'
+		dataType: int64
+		formatString: 0
+		lineageTag: a66cf099-c657-463f-a9b4-f1c118335f28
+		sourceLineageTag: ShippedDateKey
+		summarizeBy: count
+		sourceColumn: ShippedDateKey
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Late' if shipped after the required delivery date, 'On Time' if shipped on or before it, blank if not shipped yet.
+	column 'Is Late Shipment' =
+			
+			IF(
+			    ISBLANK('Order Sales'[Actual Ship Date]),
+			    BLANK(),
+			    IF(
+			        'Order Sales'[Actual Ship Date] > 'Order Sales'[Required Delivery Date],
+			        "Late",
+			        "On Time"
+			    )
+			)
+		displayFolder: Shipping & Delivery
+		lineageTag: 4a4f39c8-1a12-4dc3-887e-161f82dedd87
+		summarizeBy: none
+		expressionContext: userContext
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Order Sales' = entity
+		mode: directLake
+		source
+			entityName: gold_fact_order_sales
+			expressionSource: 'DirectLake - BronzeSalesLH'
+
+	changedProperty = Name
+
+	changedProperty = Description
+

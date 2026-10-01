@@ -1,0 +1,363 @@
+/// Represents the company's product catalog. Combines product, category, and supplier details in one place. Tracks historical changes (price updates, category reassignment) over time. Use is_current-filtered records for present-day catalog and pricing.
+table Products
+	lineageTag: a6e4cc12-227a-4ff3-9c8e-6718b6d4ca5a
+	sourceLineageTag: [dbo].[gold_dim_product]
+
+	/// Count of distinct products that have appeared in at least one sale.
+	measure 'Total Products Sold' = DISTINCTCOUNT('Order Sales'[Product Reference])
+		formatString: 0
+		displayFolder: Products
+		lineageTag: 735295ae-08b7-4f9f-8c20-1770f20a6f57
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Description
+
+	/// Count of current products whose stock has fallen to or below the reorder threshold.
+	measure 'Low Stock Products' =
+			
+			CALCULATE(
+			    DISTINCTCOUNT(Products[Product Code]),
+			    Products[Units In Stock] <= Products[Reorder Level],
+			    Products[Is Current] = true
+			)
+		formatString: 0
+		displayFolder: Products
+		lineageTag: 6604bdba-6a4c-406b-9d75-5aefc372f910
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+	/// Internal technical identifier linking this product record to sales.
+	column 'Product ID (Internal)'
+		dataType: int64
+		formatString: 0
+		lineageTag: 3d435d1a-25e1-4a9c-9444-d59891dced3a
+		sourceLineageTag: ProductKey
+		summarizeBy: none
+		sourceColumn: ProductKey
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The product's business code, consistent across all historical versions.
+	column 'Product Code'
+		dataType: int64
+		formatString: 0
+		lineageTag: ba96b073-8680-4cf1-a1ad-dd49e2fe55c7
+		sourceLineageTag: ProductId
+		summarizeBy: none
+		sourceColumn: ProductId
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The display name of the product."
+	column 'Product Name'
+		dataType: string
+		lineageTag: 62372518-3dbd-4991-a745-52096f38d3cb
+		sourceLineageTag: ProductName
+		summarizeBy: none
+		sourceColumn: ProductName
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Business code of the supplier providing this product.
+	column 'Supplier Code'
+		dataType: int64
+		formatString: 0
+		lineageTag: a60f4b0e-8d84-46cb-950c-d64f0238e64f
+		sourceLineageTag: SupplierId
+		summarizeBy: none
+		sourceColumn: SupplierId
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Business code of the product category.
+	column 'Category Code'
+		dataType: int64
+		formatString: 0
+		lineageTag: e773cc9f-251c-45df-a0bf-8a745b4e9ca8
+		sourceLineageTag: CategoryId
+		summarizeBy: none
+		sourceColumn: CategoryId
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The product category this item belongs to (e.g. Beverages, Condiments).
+	column 'Category Name'
+		dataType: string
+		lineageTag: 998d594b-c5bb-4c2c-b4f5-6f0727aff640
+		sourceLineageTag: CategoryName
+		summarizeBy: none
+		sourceColumn: CategoryName
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Describes the packaging or unit size of the product (e.g. "24 - 12 oz bottles").
+	column 'Package Size'
+		dataType: string
+		lineageTag: 37779f7a-16ab-4b01-a166-3c6ee3355c25
+		sourceLineageTag: QuantityPerUnit
+		summarizeBy: none
+		sourceColumn: QuantityPerUnit
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Price per single unit of this product.
+	column 'Unit Price'
+		dataType: double
+		lineageTag: 2e5dc5aa-4e0d-4828-a24e-45cfcf9d6168
+		sourceLineageTag: UnitPrice
+		summarizeBy: none
+		sourceColumn: UnitPrice
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Current inventory quantity available in the warehouse.
+	column 'Units In Stock'
+		dataType: int64
+		formatString: 0
+		lineageTag: ede6cd7d-68ac-4e4f-9b40-3c2f58ad3cba
+		sourceLineageTag: UnitsInStock
+		summarizeBy: none
+		sourceColumn: UnitsInStock
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Quantity of this product currently on order from the supplier, not yet received.
+	column 'Units On Order'
+		dataType: int64
+		formatString: 0
+		lineageTag: 076301c9-75a6-4e8e-a42e-d4f6ad21b6c2
+		sourceLineageTag: UnitsOnOrder
+		summarizeBy: none
+		sourceColumn: UnitsOnOrder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The inventory level at which this product should be reordered.
+	column 'Reorder Level'
+		dataType: int64
+		formatString: 0
+		lineageTag: f4250077-f9a5-45fb-8d57-35fd9846c6c1
+		sourceLineageTag: ReorderLevel
+		summarizeBy: none
+		sourceColumn: ReorderLevel
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Whether this product has been discontinued and is no longer sold.
+	column Discontinued
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: a70a5343-410a-4e10-899f-2feb2be8eecb
+		sourceLineageTag: Discontinued
+		summarizeBy: none
+		sourceColumn: Discontinued
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date this product record was first created in the system.
+	column 'Created Date'
+		dataType: string
+		lineageTag: 12e3ae1c-4872-436e-8afe-29903fac4fc0
+		sourceLineageTag: CreatedDate
+		summarizeBy: none
+		sourceColumn: CreatedDate
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Numeric portion parsed from Package Size (e.g. 24 from '24 - 12 oz bottles'). Confirm if this should stay visible or be hidden.
+	column QuantityPerUnitCount
+		dataType: int64
+		formatString: 0
+		lineageTag: b5c78a9b-5387-4593-9747-c57be6bf4dda
+		sourceLineageTag: QuantityPerUnitCount
+		summarizeBy: none
+		sourceColumn: QuantityPerUnitCount
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Unit portion parsed from Package Size (e.g. '12 oz bottles'). Confirm if this should stay visible or be hidden.
+	column QuantityPerUnitUnit
+		dataType: string
+		lineageTag: 47a07ff6-6d48-4e7e-82f1-60fa97658924
+		sourceLineageTag: QuantityPerUnitUnit
+		summarizeBy: none
+		sourceColumn: QuantityPerUnitUnit
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date this product record was last updated.
+	column 'Modified Date'
+		dataType: string
+		lineageTag: a647c22d-2887-47dd-8ad9-c02623f82be1
+		sourceLineageTag: ModifiedDate
+		summarizeBy: none
+		sourceColumn: ModifiedDate
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date this version of the product's information became accurate.
+	column 'Valid From'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 64187a44-6002-467f-8f07-49e6bbe73384
+		sourceLineageTag: ValidFrom
+		summarizeBy: none
+		sourceColumn: ValidFrom
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date this version stopped being accurate.
+	column 'Valid To'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 3ed90f2d-b73a-4273-b3d2-7147f93d3c56
+		sourceLineageTag: ValidTo
+		summarizeBy: none
+		sourceColumn: ValidTo
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// True if this is the product's most up-to-date information.
+	column 'Is Current'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ae8f119c-823c-4fa8-94ba-cb74ea71f775
+		sourceLineageTag: IsCurrent
+		summarizeBy: none
+		sourceColumn: IsCurrent
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Price band derived from Unit Price: 'OnBudget' (<10), 'Mid-Range' (<40), 'Premium' (<70), 'Luxury' (70+).
+	column 'Price Tier' =
+			
+			SWITCH(
+			    TRUE(),
+			    Products[Unit Price] < 10, "OnBudget",
+			    Products[Unit Price] < 40, "Mid-Range",
+			    Products[Unit Price] < 70, "Premium",
+			    "Luxury"
+			)
+		displayFolder: Products
+		lineageTag: a9d126c2-928d-4dde-a7c3-7b21ab0746c0
+		summarizeBy: none
+		expressionContext: userContext
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Inventory status in priority order: 'Discontinued' first, then 'Low Stock' (at/below Reorder Level), then 'Out of Stock' (zero units), else 'In Stock'.
+	column 'Stock Status' =
+			
+			IF(
+			    Products[Discontinued] = TRUE(), "Discontinued",
+			    IF(Products[Units In Stock] <= Products[Reorder Level], "Low Stock",
+			    IF(Products[Units In Stock] = 0, "Out of Stock", "In Stock"))
+			)
+		displayFolder: Products
+		lineageTag: 3ee7462b-3e5d-4502-ada8-28b8d1ac4c9a
+		summarizeBy: none
+		expressionContext: userContext
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Products = entity
+		mode: directLake
+		source
+			entityName: gold_dim_product
+			expressionSource: 'DirectLake - BronzeSalesLH'
+
+	changedProperty = Name
+
+	changedProperty = Description
+

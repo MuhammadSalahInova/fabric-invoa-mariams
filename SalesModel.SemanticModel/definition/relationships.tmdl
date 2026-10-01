@@ -1,0 +1,34 @@
+relationship b2d75da7-09fc-aa5e-f1e2-e1d127530d87
+	fromColumn: 'Order Sales'.'Supplier Reference'
+	toColumn: Suppliers.'Supplier ID (Internal)'
+
+relationship 3b6fd5ad-447a-ed77-d894-d91b6656ee96
+	fromColumn: 'Order Sales'.'Shipper Reference'
+	toColumn: Shipper.'Shipper ID (Internal)'
+
+relationship 02840ed9-91cb-a652-9f99-58964e844685
+	fromColumn: 'Order Sales'.'Product Reference'
+	toColumn: Products.'Product ID (Internal)'
+
+relationship 4379b10b-92d9-cd42-d19e-050dcb498038
+	fromColumn: 'Order Sales'.'Employee Reference'
+	toColumn: Employee.'Employee ID (Internal)'
+
+relationship 5167f506-2826-79c8-49ff-0f82f21e8d75
+	fromColumn: 'Order Sales'.'Order Date'
+	toColumn: Date.'Date ID'
+
+relationship 36e02718-7eab-4f48-adb9-a1a815d5279a
+	isActive: false
+	fromColumn: 'Order Sales'.'Required Delivery Date'
+	toColumn: Date.'Date ID'
+
+relationship 7f073d81-523b-8147-5f7f-fbba2a4bc53a
+	isActive: false
+	fromColumn: 'Order Sales'.'Actual Ship Date'
+	toColumn: Date.'Date ID'
+
+relationship cb9920ce-e13e-9b85-7f2a-41d397e3b310
+	fromColumn: 'Order Sales'.'Customer Reference'
+	toColumn: Customers.'Customer ID (Internal)'
+

@@ -1,0 +1,232 @@
+/// Represents the company's sales staff who process customer orders. Tracks historical changes to employee information (role changes, transfers) over time.
+table Employee
+	lineageTag: f65328fe-7a3b-4593-ba6d-c784f98ab7a0
+	sourceLineageTag: [dbo].[gold_dim_employee]
+
+	/// Average net revenue generated per sales employee.
+	measure 'Revenue per Employee' =
+			
+			VAR TotalEmployeeswithSales = DISTINCTCOUNT('Order Sales'[Employee Reference])
+			RETURN DIVIDE([Net Revenue], TotalEmployeeswithSales, 0)
+		displayFolder: Sales Team
+		lineageTag: 04b9413c-879d-4207-bcf3-c31aee9700ab
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Internal technical identifier linking this employee to sales.
+	column 'Employee ID (Internal)'
+		dataType: int64
+		formatString: 0
+		lineageTag: fede89be-e647-4431-8568-abb33aef49e2
+		sourceLineageTag: EmployeeKey
+		summarizeBy: none
+		sourceColumn: EmployeeKey
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The employee's business code.
+	column 'Employee Code'
+		dataType: int64
+		formatString: 0
+		lineageTag: 7ea5b463-827b-4bb6-a46d-a71601ce66aa
+		sourceLineageTag: EmployeeId
+		summarizeBy: none
+		sourceColumn: EmployeeId
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The employee's job title (e.g. Sales Representative).
+	column Title
+		dataType: string
+		lineageTag: 46d0bd86-e1a8-4d5d-a56e-628e88aae49b
+		sourceLineageTag: Title
+		summarizeBy: none
+		sourceColumn: Title
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Formal courtesy title (e.g. Mr., Ms., Dr.).
+	column 'Courtesy Title'
+		dataType: string
+		lineageTag: d85bd898-850a-4e42-8a63-7590439a77d2
+		sourceLineageTag: TitleOfCourtesy
+		summarizeBy: none
+		sourceColumn: TitleOfCourtesy
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Employee's date of birth. Stored as Text, not Date - convert with DATEVALUE before date arithmetic.
+	column 'Birth Date'
+		dataType: string
+		lineageTag: 89767579-82fc-4ffd-a261-ef7b1a2f4f15
+		sourceLineageTag: BirthDate
+		summarizeBy: none
+		sourceColumn: BirthDate
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date the employee was hired. Stored as Text, not Date - convert with DATEVALUE before date arithmetic.
+	column 'Hire Date'
+		dataType: string
+		lineageTag: 4ca9d353-67ca-4920-bfc1-6d9e47f65c74
+		sourceLineageTag: HireDate
+		summarizeBy: none
+		sourceColumn: HireDate
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// City where the employee is based.
+	column City
+		dataType: string
+		lineageTag: 13a079e0-1aa1-4dad-8ddf-3ffa45410273
+		sourceLineageTag: City
+		summarizeBy: none
+		sourceColumn: City
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Country where the employee is based.
+	column Country
+		dataType: string
+		lineageTag: 3c48a915-de01-48d9-98e3-fd3597825724
+		sourceLineageTag: Country
+		summarizeBy: none
+		sourceColumn: Country
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Identifies this employee's direct manager, for organizational hierarchy.
+	column 'Reports To (Manager ID)'
+		dataType: string
+		lineageTag: c6fc04c2-5993-4cec-8eb5-6f208b5e3637
+		sourceLineageTag: ReportsTo
+		summarizeBy: none
+		sourceColumn: ReportsTo
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	column CreatedDate
+		dataType: string
+		lineageTag: a9830916-95c4-40f1-b0ea-b90fc0103036
+		sourceLineageTag: CreatedDate
+		summarizeBy: none
+		sourceColumn: CreatedDate
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The employee's full display name.
+	column 'Full Name'
+		dataType: string
+		lineageTag: 32f1137b-08c1-4103-a729-4e419468384c
+		sourceLineageTag: FullName
+		summarizeBy: none
+		sourceColumn: FullName
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	column ModifiedDate
+		dataType: string
+		lineageTag: 9f1f9ef8-c5d2-4473-89eb-7f8a90e2626f
+		sourceLineageTag: ModifiedDate
+		summarizeBy: none
+		sourceColumn: ModifiedDate
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Historical tracking of employee role/info changes.
+	column 'Valid From'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 5621ce66-cc06-4567-a3f4-9226db3de654
+		sourceLineageTag: ValidFrom
+		summarizeBy: none
+		sourceColumn: ValidFrom
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Historical tracking of employee role/info changes.
+	column 'Valid To'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 021ab95e-9c0e-41f7-a6ec-fd2d8ba6547e
+		sourceLineageTag: ValidTo
+		summarizeBy: none
+		sourceColumn: ValidTo
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Historical tracking of employee role/info changes.
+	column 'Is Current'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ae5365ac-70e9-41f1-923e-bd0c6d409f51
+		sourceLineageTag: IsCurrent
+		summarizeBy: none
+		sourceColumn: IsCurrent
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Employee = entity
+		mode: directLake
+		source
+			entityName: gold_dim_employee
+			expressionSource: 'DirectLake - BronzeSalesLH'
+
+	changedProperty = Name
+
+	changedProperty = Description
+

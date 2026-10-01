@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "DataPipeline",
+    "displayName": "PL_Retention_Cleanup"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "e165bd2b-edd1-8fee-4e10-9c1fde93bc52"
+  }
+}

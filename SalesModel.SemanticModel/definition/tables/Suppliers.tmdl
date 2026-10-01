@@ -1,0 +1,234 @@
+/// Represents the companies that supply/manufacture our products. Tracks historical changes to supplier information over time. Use for supplier relationship and sourcing analysis.
+table Suppliers
+	lineageTag: 543f6d38-a2d3-475e-8a8f-f7b4de22e327
+	sourceLineageTag: [dbo].[gold_dim_supplier]
+
+	/// Count of distinct products sourced from this supplier.
+	measure 'Products per Supplier' =
+			
+			CALCULATE(
+			    DISTINCTCOUNT(Products[Product Code]),
+			    ALLEXCEPT(Suppliers, Suppliers[Company Name])
+			)
+		formatString: 0
+		displayFolder: Suppliers
+		lineageTag: 0723675f-a2b5-4aa6-9b5d-eceea25617fa
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+	/// Average revenue generated per product for this supplier — measures supplier efficiency, not just volume.
+	measure 'Avg Revenue per Supplier Product' = ```
+			
+			 VAR SupplierRevenue = CALCULATE([Net Revenue], ALLEXCEPT(Suppliers, Suppliers[Company Name]))
+			RETURN DIVIDE(SupplierRevenue, [Products per Supplier], 0)
+			```
+		displayFolder: Suppliers
+		lineageTag: fb91b607-0a91-47b7-b086-f3bb3695cfe9
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Total count of unique suppliers in the supplier master.
+	measure 'Total Suppliers' = DISTINCTCOUNT(Suppliers[Supplier Code])
+		formatString: 0
+		displayFolder: Suppliers
+		lineageTag: f6c1833d-cc3a-4fe9-b389-1d750c73d798
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+	measure SupplierRevenue = CALCULATE([Net Revenue], ALLEXCEPT(Suppliers, Suppliers[Company Name]))
+		displayFolder: Suppliers
+		lineageTag: 34170b37-7c8f-4ec7-a238-77396e605ddf
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Internal technical identifier linking this supplier record to products.
+	column 'Supplier ID (Internal)'
+		dataType: int64
+		formatString: 0
+		lineageTag: 8427fac9-511d-43b6-b1b5-e7a4af71f878
+		sourceLineageTag: SupplierKey
+		summarizeBy: none
+		sourceColumn: SupplierKey
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The supplier's business code.
+	column 'Supplier Code'
+		dataType: int64
+		formatString: 0
+		lineageTag: 330b55a5-66f9-44ec-83de-eb1929f68b26
+		sourceLineageTag: SupplierId
+		summarizeBy: none
+		sourceColumn: SupplierId
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The supplier's business/organization name.
+	column 'Company Name'
+		dataType: string
+		lineageTag: d87898b3-24d1-48fd-9107-8b389b1c71b5
+		sourceLineageTag: CompanyName
+		summarizeBy: none
+		sourceColumn: CompanyName
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Name of the primary contact person at this supplier.
+	column 'Contact Name'
+		dataType: string
+		lineageTag: 61ae7015-2e15-494b-87b2-91147eb4cbd7
+		sourceLineageTag: ContactName
+		summarizeBy: none
+		sourceColumn: ContactName
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Job title of the primary contact person.
+	column 'Contact Title'
+		dataType: string
+		lineageTag: 63c6ac02-1dfd-4ef3-9cb7-4f2dbcd003b1
+		sourceLineageTag: ContactTitle
+		summarizeBy: none
+		sourceColumn: ContactTitle
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// City where the supplier is located.
+	column City
+		dataType: string
+		lineageTag: b64a1cdb-6a7e-43c9-b13c-edc1a00bb2d1
+		sourceLineageTag: City
+		summarizeBy: none
+		sourceColumn: City
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Country where the supplier is located.
+	column Country
+		dataType: string
+		lineageTag: cc40cfb1-bc37-4aba-8530-d838cfbe8c2f
+		sourceLineageTag: Country
+		summarizeBy: none
+		sourceColumn: Country
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Created Date'
+		dataType: string
+		lineageTag: 0241de10-8043-4aa2-9a13-d32c9d7bfeaf
+		sourceLineageTag: CreatedDate
+		summarizeBy: none
+		sourceColumn: CreatedDate
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Modified Date'
+		dataType: string
+		lineageTag: 9359193c-bf83-4d33-9006-6aee977d986f
+		sourceLineageTag: ModifiedDate
+		summarizeBy: none
+		sourceColumn: ModifiedDate
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The date this version of the supplier's information became accurate.
+	column 'Valid From'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 64d05013-9485-44dc-8173-322ae5fff25e
+		sourceLineageTag: ValidFrom
+		summarizeBy: none
+		sourceColumn: ValidFrom
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The date this version stopped being accurate. A future date (9999-12-31) means this is still current.
+	column 'Valid To'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: e0cd164b-e9dc-4882-a605-90cf577df924
+		sourceLineageTag: ValidTo
+		summarizeBy: none
+		sourceColumn: ValidTo
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// True if this is the supplier's most up-to-date information. Filter on this for current-state reporting.
+	column 'Is Current'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: a45bfdbd-5129-4ce9-bff5-006a8d550d0b
+		sourceLineageTag: IsCurrent
+		summarizeBy: none
+		sourceColumn: IsCurrent
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Suppliers = entity
+		mode: directLake
+		source
+			entityName: gold_dim_supplier
+			expressionSource: 'DirectLake - BronzeSalesLH'
+
+	changedProperty = Description
+
+	changedProperty = Name
+

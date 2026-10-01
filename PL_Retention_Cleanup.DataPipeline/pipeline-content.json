@@ -1,0 +1,36 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "f000c484-9a1a-8a24-4ad0-c2ef08170f81",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "p_bronze_retention_days": {
+              "value": "30",
+              "type": "int"
+            },
+            "p_bronze_prefix": {
+              "value": "bronze_final_",
+              "type": "string"
+            },
+            "p_vacuum_after_delete": {
+              "value": true,
+              "type": "bool"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Nb_Cleanup_Bronze",
+        "dependsOn": []
+      }
+    ]
+  }
+}

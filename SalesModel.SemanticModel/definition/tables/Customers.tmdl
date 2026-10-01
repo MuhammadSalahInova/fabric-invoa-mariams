@@ -1,0 +1,235 @@
+/// Represents the companies that purchase products from us. Tracks historical changes to customer information over time (name changes, contact updates, relocation). Use is_current-filtered records for present-day customer lists.
+table Customers
+	lineageTag: 3273532e-aa95-42f6-bee1-16a6eda2ea3b
+	sourceLineageTag: [dbo].[gold_dim_customer]
+
+	/// Count of distinct customers who have placed orders.
+	measure 'Active Customers' = DISTINCTCOUNT('Order Sales'[Customer Reference])
+		formatString: 0
+		displayFolder: Customers
+		lineageTag: 6aa6a3eb-1285-49c2-a54c-a788900102b9
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Description
+
+	/// Average net revenue generated per customer.
+	measure 'Revenue per Customer' = DIVIDE([Net Revenue], [Active Customers], 0)
+		displayFolder: Customers
+		lineageTag: 89642312-f079-433a-876b-6563f1102d1c
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Average number of different products purchased per customer — indicates purchase diversity.
+	measure 'Products per Customer' =
+			
+			DIVIDE(COUNT('Order Sales'[Product Reference]), [Active Customers], 0)
+		displayFolder: Customers
+		lineageTag: 66935490-a1fd-4be8-b649-56e4f020ca7d
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Total count of unique customers in the customer master, regardless of whether they have ever placed an order.
+	measure 'Total Customers' = DISTINCTCOUNT(Customers[Customer Code])
+		formatString: 0
+		displayFolder: Customers
+		lineageTag: 04f25d3c-7e7b-45f0-9874-e74c6aa74cb6
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+	/// Internal technical identifier linking this customer record to sales. Not business-meaningful.
+	column 'Customer ID (Internal)'
+		dataType: int64
+		formatString: 0
+		lineageTag: 68838fb2-88c2-4dfb-8c32-52f851c593c1
+		sourceLineageTag: CustomerKey
+		summarizeBy: none
+		sourceColumn: CustomerKey
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The customer's business code, consistent across all historical versions.
+	column 'Customer Code'
+		dataType: string
+		lineageTag: b1617ee9-2c76-4ff9-94f0-7002946d5aa9
+		sourceLineageTag: CustomerId
+		summarizeBy: none
+		sourceColumn: CustomerId
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The customer's business/organization name.
+	column 'Company Name'
+		dataType: string
+		lineageTag: fff4d062-44e9-44b7-9074-433e5d1e820b
+		sourceLineageTag: CompanyName
+		summarizeBy: none
+		sourceColumn: CompanyName
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Name of the primary contact person at this customer.
+	column 'Contact Name'
+		dataType: string
+		lineageTag: 8d2e36e7-80eb-4a6e-b4f7-dcd2319c43e4
+		sourceLineageTag: ContactName
+		summarizeBy: none
+		sourceColumn: ContactName
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Job title of the primary contact person.
+	column 'Contact Title'
+		dataType: string
+		lineageTag: d9456677-e7b1-4452-9648-c3c34f27d40c
+		sourceLineageTag: ContactTitle
+		summarizeBy: none
+		sourceColumn: ContactTitle
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// City where the customer is located.
+	column City
+		dataType: string
+		lineageTag: 5e8e7b52-b18b-4fc6-b868-c3b78e87d840
+		sourceLineageTag: City
+		summarizeBy: none
+		sourceColumn: City
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Country where the customer is located.
+	column Country
+		dataType: string
+		lineageTag: eb87814a-79ba-4137-a539-7551fdc3b0ab
+		sourceLineageTag: Country
+		summarizeBy: none
+		sourceColumn: Country
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date this customer record was first created in the system.
+	column 'Record Created On'
+		dataType: string
+		lineageTag: 8de4899a-8868-4a02-9359-0faf54af93b2
+		sourceLineageTag: CreatedDate
+		summarizeBy: none
+		sourceColumn: CreatedDate
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date this customer record was last updated
+	column 'Last Modified On'
+		dataType: string
+		lineageTag: fb031c12-414b-4d57-9dc2-0e621ef218b8
+		sourceLineageTag: ModifiedDate
+		summarizeBy: none
+		sourceColumn: ModifiedDate
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The date this version of the customer's information became accurate.
+	column 'Valid From'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 79745508-4420-4f00-8711-78372bfb566a
+		sourceLineageTag: ValidFrom
+		summarizeBy: none
+		sourceColumn: ValidFrom
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The date this version stopped being accurate. A future date (9999-12-31) means this is still current.
+	column 'Valid To'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: e4913f8a-ccb3-4950-8643-45d76a21652d
+		sourceLineageTag: ValidTo
+		summarizeBy: none
+		sourceColumn: ValidTo
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// True if this is the customer's most up-to-date information. Filter on this for current-state reporting.
+	column 'Is Current'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ea8ae484-2648-498e-866e-abf9fa09984a
+		sourceLineageTag: IsCurrent
+		summarizeBy: none
+		sourceColumn: IsCurrent
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Customers = entity
+		mode: directLake
+		source
+			entityName: gold_dim_customer
+			expressionSource: 'DirectLake - BronzeSalesLH'
+
+	changedProperty = Name
+
+	changedProperty = Description
+

@@ -1,0 +1,175 @@
+/// Represents the third-party carriers used to deliver customer orders. Use alongside shipping performance measures to evaluate carrier reliability and its impact on customer satisfaction.
+table Shipper
+	lineageTag: 5edd7715-1482-4b37-b9e4-4be353caf34c
+	sourceLineageTag: [dbo].[gold_dim_shipper]
+
+	/// Total revenue associated with orders delivered by this shipping carrier.
+	measure 'Revenue by Shipper' =
+			
+			CALCULATE([Net Revenue], ALLEXCEPT(Shipper, Shipper[Company Name]))
+		displayFolder: Shipping & Delivery
+		lineageTag: d59ec94a-92c9-4c3d-a125-aefc1228adbf
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Average freight cost per order for this carrier.
+	measure 'Avg Freight Cost by Shipper' =
+			
+			AVERAGEX('Order Sales', 'Order Sales'[Shipping Cost])
+		displayFolder: Shipping & Delivery
+		lineageTag: fb7fe9fd-be58-4d8c-8eab-4d0f859eea3c
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Percentage of orders that have shipped (have a non-blank Actual Ship Date), out of all orders. Unlike On-Time Delivery %, unshipped orders remain in the denominator.
+	measure 'Ship Rate %' = ```
+			
+			VAR OrdersShipped = 
+			CALCULATE(
+			    [Total Orders],
+			    NOT ISBLANK('Order Sales'[Actual Ship Date])
+			)
+			RETURN DIVIDE( OrdersShipped, [Total Orders], 0)
+			```
+		displayFolder: Shipping & Delivery
+		lineageTag: b6a17359-6289-48eb-9c99-07b6a709fac1
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Internal technical identifier linking this carrier to sales.
+	column 'Shipper ID (Internal)'
+		dataType: int64
+		formatString: 0
+		lineageTag: c283610a-47c9-4cb2-aa5a-f12bed569d1a
+		sourceLineageTag: ShipperKey
+		summarizeBy: none
+		sourceColumn: ShipperKey
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The carrier's business code.
+	column 'Shipper Code'
+		dataType: int64
+		formatString: 0
+		lineageTag: 80ca1cee-63a6-4232-bd94-c31a83430888
+		sourceLineageTag: ShipperId
+		summarizeBy: none
+		sourceColumn: ShipperId
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The shipping carrier's business name.
+	column 'Company Name'
+		dataType: string
+		lineageTag: 0690e561-e80d-44c3-88aa-96b753be522b
+		sourceLineageTag: CompanyName
+		summarizeBy: none
+		sourceColumn: CompanyName
+
+		changedProperty = Name
+
+		changedProperty = Description
+
+		annotation SummarizationSetBy = Automatic
+
+	column CreatedDate
+		dataType: string
+		lineageTag: cb37857e-9625-49f5-8fdd-85173773fb3a
+		sourceLineageTag: CreatedDate
+		summarizeBy: none
+		sourceColumn: CreatedDate
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Modified Date'
+		dataType: string
+		lineageTag: 89f781bb-9a7c-411e-9858-d9dd45a77476
+		sourceLineageTag: ModifiedDate
+		summarizeBy: none
+		sourceColumn: ModifiedDate
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Historical tracking, in case carrier details change over time.
+	column 'Valid From'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 12ca0f4a-d3fc-443d-bb89-b2b76a1dcca8
+		sourceLineageTag: ValidFrom
+		summarizeBy: none
+		sourceColumn: ValidFrom
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Historical tracking, in case carrier details change over time.
+	column 'Valid To'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 45917b20-9ae6-4c25-8b4a-f7b44ec8f31e
+		sourceLineageTag: ValidTo
+		summarizeBy: none
+		sourceColumn: ValidTo
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Historical tracking, in case carrier details change over time.
+	column 'Is Current'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 991095f4-2e20-44ba-951a-7c758f4f9343
+		sourceLineageTag: IsCurrent
+		summarizeBy: none
+		sourceColumn: IsCurrent
+
+		changedProperty = Description
+
+		changedProperty = Name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Shipper = entity
+		mode: directLake
+		source
+			entityName: gold_dim_shipper
+			expressionSource: 'DirectLake - BronzeSalesLH'
+
+	changedProperty = Name
+
+	changedProperty = Description
+

@@ -1,0 +1,242 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainerMobileState/2.7.0/schema.json",
+  "position": {
+    "x": 0,
+    "y": 101,
+    "z": 4,
+    "height": 82,
+    "width": 162
+  },
+  "objects": {
+    "general": [],
+    "selection": [],
+    "layout": [
+      {
+        "properties": {
+          "cellPadding": {
+            "expr": {
+              "Literal": {
+                "Value": "2L"
+              }
+            }
+          },
+          "indentation": {
+            "expr": {
+              "Literal": {
+                "Value": "0L"
+              }
+            }
+          },
+          "fixedHeight": {
+            "expr": {
+              "Literal": {
+                "Value": "20L"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "overFlow": [
+      {
+        "properties": {
+          "overFlowStyle": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "actionState": [],
+    "value": [
+      {
+        "properties": {
+          "fontSize": {
+            "expr": {
+              "Literal": {
+                "Value": "8D"
+              }
+            }
+          },
+          "horizontalAlignment": {
+            "expr": {
+              "Literal": {
+                "Value": "'center'"
+              }
+            }
+          }
+        },
+        "selector": {
+          "id": "default"
+        }
+      }
+    ],
+    "label": [
+      {
+        "properties": {
+          "fontSize": {
+            "expr": {
+              "Literal": {
+                "Value": "8D"
+              }
+            }
+          },
+          "position": {
+            "expr": {
+              "Literal": {
+                "Value": "'aboveValue'"
+              }
+            }
+          }
+        },
+        "selector": {
+          "id": "default"
+        }
+      }
+    ],
+    "data": [],
+    "fillCustom": [],
+    "background": [],
+    "spacing": [
+      {
+        "properties": {
+          "verticalSpacing": {
+            "expr": {
+              "Literal": {
+                "Value": "1L"
+              }
+            }
+          }
+        },
+        "selector": {
+          "id": "default"
+        }
+      }
+    ],
+    "selectionIcon": [
+      {
+        "properties": {
+          "spacing": {
+            "expr": {
+              "Literal": {
+                "Value": "1L"
+              }
+            }
+          }
+        },
+        "selector": {
+          "id": "interaction:hover"
+        }
+      },
+      {
+        "properties": {
+          "size": {
+            "expr": {
+              "Literal": {
+                "Value": "22L"
+              }
+            }
+          }
+        },
+        "selector": {
+          "id": "interaction:hover",
+          "hierarchyMatching": 1
+        }
+      }
+    ],
+    "shapeCustomRectangle": [],
+    "accentBar": []
+  },
+  "visualContainerObjects": {
+    "background": [],
+    "dropShadow": [],
+    "border": [],
+    "visualHeader": [],
+    "title": [
+      {
+        "properties": {
+          "fontSize": {
+            "expr": {
+              "Literal": {
+                "Value": "12D"
+              }
+            }
+          },
+          "alignment": {
+            "expr": {
+              "Literal": {
+                "Value": "'center'"
+              }
+            }
+          },
+          "heading": {
+            "expr": {
+              "Literal": {
+                "Value": "'Heading2'"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "stylePreset": [],
+    "visualTooltip": [],
+    "spacing": [
+      {
+        "properties": {
+          "spaceAboveSubtitle": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          },
+          "spaceAbovePlotArea": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "padding": [
+      {
+        "properties": {
+          "top": {
+            "expr": {
+              "Literal": {
+                "Value": "3D"
+              }
+            }
+          },
+          "bottom": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          },
+          "right": {
+            "expr": {
+              "Literal": {
+                "Value": "4D"
+              }
+            }
+          },
+          "left": {
+            "expr": {
+              "Literal": {
+                "Value": "4D"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainerMobileState/2.7.0/schema.json",
+  "position": {
+    "x": 0,
+    "y": 988,
+    "z": 10,
+    "height": 212,
+    "width": 324
+  },
+  "objects": {
+    "values": [
+      {
+        "properties": {
+          "fontSize": {
+            "expr": {
+              "Literal": {
+                "Value": "8D"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "columnHeaders": [
+      {
+        "properties": {
+          "fontSize": {
+            "expr": {
+              "Literal": {
+                "Value": "8D"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "rowHeaders": [
+      {
+        "properties": {
+          "fontSize": {
+            "expr": {
+              "Literal": {
+                "Value": "9D"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "grid": [
+      {
+        "properties": {
+          "gridHorizontal": {
+            "expr": {
+              "Literal": {
+                "Value": "true"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualContainerObjects": {
+    "title": [
+      {
+        "properties": {}
+      }
+    ],
+    "subTitle": [
+      {
+        "properties": {}
+      }
+    ],
+    "spacing": [
+      {
+        "properties": {}
+      }
+    ],
+    "padding": [
+      {
+        "properties": {}
+      }
+    ],
+    "stylePreset": [
+      {
+        "properties": {
+          "name": {
+            "expr": {
+              "Literal": {
+                "Value": "'None sparse'"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
